@@ -175,7 +175,7 @@ def login():
 
 
 def playScreen():
-    search_textbox = TextBox(SCREEN_WIDTH/6, SCREEN_HEIGHT/25, int(SCREEN_WIDTH * 0.4), int(SCREEN_HEIGHT * 0.15), "")
+    search_textbox = TextBox(SCREEN_WIDTH/6, SCREEN_HEIGHT/25, int(SCREEN_WIDTH * 0.4), int(SCREEN_HEIGHT * 0.15), "SEARCH USERS")
 
 
     while True:
