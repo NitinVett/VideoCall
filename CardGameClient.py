@@ -77,6 +77,7 @@ def listenForCall(conn):
     call = conn.send("~CALL?~")
     if call == "YES":
         videoCall()
+        print("a")
 
 
 def removeAllTextBoxes():

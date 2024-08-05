@@ -22,6 +22,7 @@ with open('loginData.pkl', "rb") as f2:
     users = dict.fromkeys(login_credentials, ["OFFLINE", None,("FREE",None)])
 
 
+
 def recvMessage(conn):
     msg_length = conn.recv(HEADER).decode(FORMAT)
 
