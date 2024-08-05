@@ -1,7 +1,10 @@
 import datetime
+import pickle
 import socket
 import time
-
+import cv2
+import numpy as np
+import sys
 import pygame
 import sys
 # create display window
@@ -70,6 +73,11 @@ play_button = Button((SCREEN_WIDTH * 0.125), (SCREEN_HEIGHT * 0.20), play_img, S
 conn = Connect()
 conn.connect()
 
+def listenForCall(conn):
+    call = conn.send("~CALL?~")
+    if call == "YES":
+        videoCall()
+
 
 def removeAllTextBoxes():
     for user in TextBox._textboxes:
@@ -122,6 +130,7 @@ def signup():
     while True:
         screen.fill((0, 0, 0))
         eventListener()
+        listenForCall(conn)
 
         if back_button.draw(screen):
             removeAllTextBoxes()
@@ -152,6 +161,7 @@ def login():
     while True:
         screen.fill((0, 0, 0))
         eventListener()
+        listenForCall(conn)
 
         if back_button.draw(screen):
             removeAllTextBoxes()
@@ -181,6 +191,8 @@ def playScreen():
     while True:
         screen.fill((0, 50, 100))
         eventListener()
+        listenForCall(conn)
+
         if back_button.draw(screen):
             removeAllTextBoxes()
             menuScreen()
@@ -188,9 +200,20 @@ def playScreen():
         search_textbox.makeTextBox(False, screen)
         if search_button.draw(screen):
             response = conn.send("~SEARCH~ " + search_textbox.text)
+            if response == "CALLING":
+                videoCall()
 
         pygame.display.flip()
 
+def videoCall():
+    camera = cv2.VideoCapture(0)
+    while True:
+        ret, frame = camera.read()
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        output = conn.send(pickle.dumps(frame))
+        output = pickle.loads(output)
+        output = pygame.surfarray.make_surface(output)
+        screen.blit(output, (0, 0))
 
 #                                                   MAIN SCREEN
 # ***********************************************************************************************************************
