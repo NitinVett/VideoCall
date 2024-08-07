@@ -16,11 +16,23 @@ class Connect:
     def connect(self):
         self.client.connect(self.ADDR)
 
-    def send(self, msg):
-        message = msg.encode(self.FORMAT)
-        msg_length = len(message)
-        send_length = str(msg_length).encode(self.FORMAT)
+    def send(self, msg,encode = True):
+        message = msg
+        print(message)
+        send_length = str(len(message))
+        print(send_length)
+        send_length = send_length.encode(self.FORMAT)
+        if encode:
+            message = message.encode(self.FORMAT)
+
+
         send_length += b' ' * (self.HEADER - len(send_length))
         self.client.send(send_length)
         self.client.send(message)
-        return self.client.recv(2048).decode(self.FORMAT)
+
+        msg_length = self.client.recv(self.HEADER).decode(self.FORMAT)
+        msg_length = int(msg_length)
+        response = self.client.recv(msg_length)
+        if encode:
+            response = response.decode(self.FORMAT)
+        return response

@@ -17,7 +17,7 @@ errormsgtimer = datetime.datetime.now() + datetime.timedelta(seconds=3)
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 800
 CHARLIMIT = 15
-response = " "
+
 
 SCALE = 1
 mixer.init()
@@ -42,20 +42,20 @@ muteMusic_img = pygame.image.load('pics/muteMusic.png').convert_alpha()
 play_img = pygame.image.load('pics/Play.png').convert_alpha()
 search_img = pygame.image.load('pics/search.png').convert_alpha()
 # creates buttons images
-search_img = pygame.transform.scale(search_img, (SCREEN_WIDTH/24, SCREEN_HEIGHT/25))
-start_img = pygame.transform.scale(start_img, (SCREEN_WIDTH/4, SCREEN_HEIGHT/8))
-login_img = pygame.transform.scale(login_img, (SCREEN_WIDTH/4, SCREEN_HEIGHT/8))
-login2_img = pygame.transform.scale(login2_img, (SCREEN_WIDTH/6, SCREEN_HEIGHT/4))
-exit_img = pygame.transform.scale(exit_img, (SCREEN_WIDTH/4, SCREEN_HEIGHT/8))
+search_img = pygame.transform.scale(search_img, (SCREEN_WIDTH / 24, SCREEN_HEIGHT / 25))
+start_img = pygame.transform.scale(start_img, (SCREEN_WIDTH / 4, SCREEN_HEIGHT / 8))
+login_img = pygame.transform.scale(login_img, (SCREEN_WIDTH / 4, SCREEN_HEIGHT / 8))
+login2_img = pygame.transform.scale(login2_img, (SCREEN_WIDTH / 6, SCREEN_HEIGHT / 4))
+exit_img = pygame.transform.scale(exit_img, (SCREEN_WIDTH / 4, SCREEN_HEIGHT / 8))
 background_img = pygame.transform.scale(background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
-back_img = pygame.transform.scale(back_img, (SCREEN_WIDTH/24, SCREEN_HEIGHT/16))
-continue_img = pygame.transform.scale(continue_img, (SCREEN_WIDTH/6, SCREEN_HEIGHT/4))
-muteMusic_img = pygame.transform.scale(muteMusic_img, (SCREEN_WIDTH/12, SCREEN_HEIGHT/8))
-play_img = pygame.transform.scale(play_img, (SCREEN_WIDTH/4, SCREEN_HEIGHT/8))
+back_img = pygame.transform.scale(back_img, (SCREEN_WIDTH / 24, SCREEN_HEIGHT / 16))
+continue_img = pygame.transform.scale(continue_img, (SCREEN_WIDTH / 6, SCREEN_HEIGHT / 4))
+muteMusic_img = pygame.transform.scale(muteMusic_img, (SCREEN_WIDTH / 12, SCREEN_HEIGHT / 8))
+play_img = pygame.transform.scale(play_img, (SCREEN_WIDTH / 4, SCREEN_HEIGHT / 8))
 # create button instances
 
-search_button = Button(SCREEN_WIDTH*0.4 + SCREEN_WIDTH/6 ,
-                           (SCREEN_HEIGHT*0.15), search_img, SCALE)
+search_button = Button(SCREEN_WIDTH * 0.4 + SCREEN_WIDTH / 6,
+                       (SCREEN_HEIGHT * 0.15), search_img, SCALE)
 signup_button = Button((SCREEN_WIDTH * 0.5) - (start_img.get_width() / 2),
                        (SCREEN_HEIGHT * 0.25) - (start_img.get_height() / 2), start_img, SCALE)
 login_button = Button((SCREEN_WIDTH * 0.5) - (login_img.get_width() / 2),
@@ -73,8 +73,10 @@ play_button = Button((SCREEN_WIDTH * 0.125), (SCREEN_HEIGHT * 0.20), play_img, S
 conn = Connect()
 conn.connect()
 
+
 def listenForCall(conn):
-    call = conn.send("~CALL?~")
+    call = conn.send("~CALL~")
+
     if call == "YES":
         videoCall()
         print("a")
@@ -124,14 +126,17 @@ def eventListener():
 
 
 def signup():
-    user_textbox = TextBox(SCREEN_WIDTH/6, SCREEN_HEIGHT/25, int(SCREEN_WIDTH / 8), int(SCREEN_HEIGHT * 0.3), "USERNAME")
-    pass_textbox = TextBox(SCREEN_WIDTH/6, SCREEN_HEIGHT/25, int(SCREEN_WIDTH / 8), int(SCREEN_HEIGHT * 0.4), "PASSWORD")
-    confirmpass_textbox = TextBox(SCREEN_WIDTH/6, SCREEN_HEIGHT/25, int(SCREEN_WIDTH / 8), int(SCREEN_HEIGHT * 0.5), "CONFIRM PASSWORD")
+    user_textbox = TextBox(SCREEN_WIDTH / 6, SCREEN_HEIGHT / 25, int(SCREEN_WIDTH / 8), int(SCREEN_HEIGHT * 0.3),
+                           "USERNAME")
+    pass_textbox = TextBox(SCREEN_WIDTH / 6, SCREEN_HEIGHT / 25, int(SCREEN_WIDTH / 8), int(SCREEN_HEIGHT * 0.4),
+                           "PASSWORD")
+    confirmpass_textbox = TextBox(SCREEN_WIDTH / 6, SCREEN_HEIGHT / 25, int(SCREEN_WIDTH / 8), int(SCREEN_HEIGHT * 0.5),
+                                  "CONFIRM PASSWORD")
 
     while True:
         screen.fill((0, 0, 0))
         eventListener()
-        listenForCall(conn)
+
 
         if back_button.draw(screen):
             removeAllTextBoxes()
@@ -156,13 +161,15 @@ def signup():
 
 
 def login():
-    user_textbox = TextBox(SCREEN_WIDTH/6, SCREEN_HEIGHT/25, int(SCREEN_WIDTH / 8), int(SCREEN_HEIGHT * 0.3), "USERNAME")
-    pass_textbox = TextBox(SCREEN_WIDTH/6, SCREEN_HEIGHT/25, int(SCREEN_WIDTH / 8), int(SCREEN_HEIGHT * 0.4), "PASSWORD")
+    user_textbox = TextBox(SCREEN_WIDTH / 6, SCREEN_HEIGHT / 25, int(SCREEN_WIDTH / 8), int(SCREEN_HEIGHT * 0.3),
+                           "USERNAME")
+    pass_textbox = TextBox(SCREEN_WIDTH / 6, SCREEN_HEIGHT / 25, int(SCREEN_WIDTH / 8), int(SCREEN_HEIGHT * 0.4),
+                           "PASSWORD")
 
     while True:
         screen.fill((0, 0, 0))
         eventListener()
-        listenForCall(conn)
+
 
         if back_button.draw(screen):
             removeAllTextBoxes()
@@ -179,6 +186,7 @@ def login():
                 removeAllTextBoxes()
                 playScreen()
             else:
+                print(response)
                 errorMessage(response)
 
         pygame.display.flip()
@@ -186,8 +194,8 @@ def login():
 
 
 def playScreen():
-    search_textbox = TextBox(SCREEN_WIDTH/6, SCREEN_HEIGHT/25, int(SCREEN_WIDTH * 0.4), int(SCREEN_HEIGHT * 0.15), "SEARCH USERS")
-
+    search_textbox = TextBox(SCREEN_WIDTH / 6, SCREEN_HEIGHT / 25, int(SCREEN_WIDTH * 0.4), int(SCREEN_HEIGHT * 0.15),
+                             "SEARCH USERS")
 
     while True:
         screen.fill((0, 50, 100))
@@ -203,18 +211,26 @@ def playScreen():
             response = conn.send("~SEARCH~ " + search_textbox.text)
             if response == "CALLING":
                 videoCall()
+                removeAllTextBoxes()
 
         pygame.display.flip()
 
+
 def videoCall():
+    print("A")
     camera = cv2.VideoCapture(0)
+
     while True:
+        screen.fill((0, 0, 0))
+        eventListener()
         ret, frame = camera.read()
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        output = conn.send(pickle.dumps(frame))
+        output = conn.send(pickle.dumps(frame), encode=False)
         output = pickle.loads(output)
         output = pygame.surfarray.make_surface(output)
         screen.blit(output, (0, 0))
+        pygame.display.update()
+
 
 #                                                   MAIN SCREEN
 # ***********************************************************************************************************************

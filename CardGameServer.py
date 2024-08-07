@@ -12,23 +12,35 @@ FORMAT = 'utf-8'
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
 
-
 with open('loginData.pkl', "rb") as f2:
     login_credentials = pickle.load(f2)
     """1st entry in value is users status (OFFLINE or ONLINE),
         2nd entry is their connection to the server(None if OFFLINE),
         3rd entry is their availability (FREE,RINGING,BUSY) and if they are busy or ringing the 2nd entry in the tuple will
         be the connection that is calling or in call with that user"""
-    users = dict.fromkeys(login_credentials, ["OFFLINE", None,("FREE",None)])
+    users = {user: ["OFFLINE", None, ("FREE", None)] for user in login_credentials}
 
 
+def sendMessage(msg, conn, encode=True):
+    message = msg
+    send_length = str(len(message))
+    send_length = send_length.encode(FORMAT)
+    if encode:
+        message = message.encode(FORMAT)
 
-def recvMessage(conn):
+    send_length += b' ' * (HEADER - len(send_length))
+    conn.send(send_length)
+    conn.send(message)
+
+
+def recvMessage(conn, decode=True):
     msg_length = conn.recv(HEADER).decode(FORMAT)
 
     msg_length = int(msg_length)
-    msg1 = conn.recv(msg_length).decode(FORMAT)
-    msg1 = msg1.split(" ")
+    msg1 = conn.recv(msg_length)
+    if decode:
+        msg1 = msg1.decode(FORMAT)
+        msg1 = msg1.split(" ")
     return msg1
 
 
@@ -38,58 +50,69 @@ def handle_client(conn, addr):
     connected = True
     while connected:
         msg = recvMessage(conn)
-        if msg[0] == "~CALL~":
-            if users[curruser][0] == "RINGING":
-                videoCall(conn,users[curruser][2][1])
 
+        if msg[0] == "~CALL~":
+
+            if users[curruser][2][0] == "RINGING":
+                sendMessage("YES", conn)
+                users[curruser][2] = ("BUSY", users[curruser][2][1])
+                videoCall(curruser)
 
         if msg[0] == "~SIGNUP~":
             if msg[1] not in login_credentials:
                 login_credentials[msg[1]] = msg[2]
                 with open('loginData.pkl', "wb") as f:
                     pickle.dump(login_credentials, f)
-                conn.send("SUCCESSFUL SIGNUP".encode(FORMAT))
+                sendMessage("SUCCESSFUL SIGNUP", conn)
             else:
-                conn.send("USERNAME TAKEN".encode(FORMAT))
+                sendMessage("USERNAME TAKEN", conn)
 
         elif msg[0] == "~LOGIN~":
             if msg[1] in login_credentials:
                 if msg[2] == login_credentials[msg[1]]:
                     curruser = msg[1]
-                    users[curruser] = ["ONLINE", conn]
-                    conn.send("LOGIN SUCCESSFUL".encode(FORMAT))
+                    users[curruser][0] = "ONLINE"
+                    users[curruser][1] = conn
+
+                    sendMessage("LOGIN SUCCESSFUL", conn)
             else:
-                conn.send("INVALID LOGIN".encode(FORMAT))
+                sendMessage("INVALID LOGIN", conn)
         elif msg[0] == "~SEARCH~":
             if msg[1] in users:
                 if users[msg[1]][0] == "ONLINE":
-                    conn.send("CALLING".encode(FORMAT))
-                    users[msg[1]][2][1] = "RINGING"
-                    users[msg[1]][2][0] = conn
+                    users[msg[1]][2] = ("RINGING", conn)
+                    while users[msg[1]][2][0] != "BUSY":
+                        continue
+                    sendMessage("CALLING", conn)
+                    users[curruser][2] = ("BUSY", users[msg[1]][1])
+
+                    videoCall(curruser)
 
 
             else:
-                conn.send("INVALID".encode(FORMAT))
+                sendMessage("INVALID", conn)
         elif msg[0] == "~EXIT~":
             if curruser != "$none$":
-                users[curruser] = ["Offline", None]
-            conn.send("EXIT1".encode(FORMAT))
+                users[curruser][0] = "OFFLINE"
+                users[curruser][1] = None
+                users[curruser][2] = ("FREE", None)
+
+            sendMessage("EXIT1", conn)
             break
         else:
-            conn.send("NONE".encode(FORMAT))
+            sendMessage("NONE", conn)
 
 
-def videoCall(conn1, conn2):
+def videoCall(user):
     while True:
-        messages = []
-        for conn in [conn1, conn2]:
-            msg = recvMessage(conn)
-            if (msg == "LEAVE"):
-                return "add something here"
-            messages.append(msg)
 
-        conn1.send(msg[1])
-        conn2.send(msg[0])
+        msg = recvMessage(users[user][1], decode=False)[0]
+        print(msg + "   " + user)
+        if msg == "LEAVE":
+            sendMessage("END", users[user][2][1])
+            return "add something here"
+
+        sendMessage(msg, users[user][2][1],encode=False)
 
 
 def start():
