@@ -13,6 +13,7 @@ from Button import Button
 from Connect import Connect
 from TextBox import TextBox
 
+
 errormsgtimer = datetime.datetime.now() + datetime.timedelta(seconds=3)
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 800
@@ -226,6 +227,7 @@ def videoCall():
         ret, frame = camera.read()
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         output = conn.send(pickle.dumps(frame), encode=False)
+
         output = pickle.loads(output)
         output = pygame.surfarray.make_surface(output)
         screen.blit(output, (0, 0))

@@ -29,15 +29,29 @@ def sendMessage(msg, conn, encode=True):
         message = message.encode(FORMAT)
 
     send_length += b' ' * (HEADER - len(send_length))
-    conn.send(send_length)
-    conn.send(message)
+    conn.sendall(send_length)
+    conn.sendall(message)
 
+def recvLargeMessage(conn,msg_length):
+    buffer_size = 4096
+    total_length = int(msg_length)
+    data = b''  # to store the full message in bytes
 
+    while len(data) < total_length:
+        packet = conn.recv(buffer_size)  # receive data in chunks
+        if not packet:
+            break  # if the connection is closed, break
+        data += packet
+        if total_length - len(data) < 4096:
+            buffer_size = total_length - len(data)
+    return data
 def recvMessage(conn, decode=True):
     msg_length = conn.recv(HEADER).decode(FORMAT)
-
     msg_length = int(msg_length)
-    msg1 = conn.recv(msg_length)
+    if msg_length > 4096:
+        msg1 = recvLargeMessage(conn,msg_length)
+    else:
+        msg1 = conn.recv(msg_length)
     if decode:
         msg1 = msg1.decode(FORMAT)
         msg1 = msg1.split(" ")
@@ -106,8 +120,10 @@ def handle_client(conn, addr):
 def videoCall(user):
     while True:
 
-        msg = recvMessage(users[user][1], decode=False)[0]
-        print(msg + "   " + user)
+        msg = recvMessage(users[user][1], decode=False)
+        print(msg)
+        print(type(msg))
+        print(len(msg))
         if msg == "LEAVE":
             sendMessage("END", users[user][2][1])
             return "add something here"
