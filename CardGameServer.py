@@ -3,15 +3,17 @@ import socket
 import sys
 import threading
 
+# CONSTANTS
 HEADER = 64
 PORT = 5051
 SERVER = "148.113.183.233"
 ADDR = (SERVER, PORT)
 FORMAT = 'utf-8'
-
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
 server.bind(ADDR)
 
+# loading user information from our pickle file
 with open('loginData.pkl', "rb") as f2:
     login_credentials = pickle.load(f2)
     """1st entry in value is users status (OFFLINE or ONLINE),
@@ -21,47 +23,67 @@ with open('loginData.pkl', "rb") as f2:
     users = {user: ["OFFLINE", None, ("FREE", None)] for user in login_credentials}
 
 
+# sends message to given socket
 def sendMessage(msg, conn, encode=True):
     message = msg
+
+    # gets the length of the message
     send_length = str(len(message))
     send_length = send_length.encode(FORMAT)
+    send_length += b' ' * (HEADER - len(send_length))
+
+    # encodes message unless encode is set to false
     if encode:
         message = message.encode(FORMAT)
 
-    send_length += b' ' * (HEADER - len(send_length))
+    # sends the length of the message and then the actual message
     conn.sendall(send_length)
     conn.sendall(message)
 
-def recvLargeMessage(conn,msg_length):
+
+# function to receive messages larger than 4096 bytes
+def recvLargeMessage(conn, msg_length):
     buffer_size = 4096
     total_length = int(msg_length)
-    data = b''  # to store the full message in bytes
+    data = b''
 
+    # receives the message in 4096 byte chunks until the message is fully received
     while len(data) < total_length:
-        packet = conn.recv(buffer_size)  # receive data in chunks
+        packet = conn.recv(buffer_size)
         if not packet:
-            break  # if the connection is closed, break
+            break
         data += packet
         if total_length - len(data) < 4096:
             buffer_size = total_length - len(data)
     return data
+
+
+# function for receiving messages from a connection
 def recvMessage(conn, decode=True):
+    # looks to receive the size of the incoming message
     msg_length = conn.recv(HEADER).decode(FORMAT)
     msg_length = int(msg_length)
+
+    # uses recvLargeMessage for messages greater than 4096 bytes in size
     if msg_length > 4096:
-        msg1 = recvLargeMessage(conn,msg_length)
+        msg1 = recvLargeMessage(conn, msg_length)
     else:
         msg1 = conn.recv(msg_length)
+
+    # will decode unless decode is set to false
     if decode:
         msg1 = msg1.decode(FORMAT)
         msg1 = msg1.split(" ")
     return msg1
 
 
+# main function to handle each individual connection
 def handle_client(conn, addr):
     print(f"[NEW CONNECTION] {addr} connected.")
     curruser = "$none$"
     connected = True
+
+    # receives and responds to commands
     while connected:
         msg = recvMessage(conn)
 
@@ -117,20 +139,19 @@ def handle_client(conn, addr):
             sendMessage("NONE", conn)
 
 
+# will take camera information from users in calls and send it to their recipient
 def videoCall(user):
     while True:
 
         msg = recvMessage(users[user][1], decode=False)
-        print(msg)
-        print(type(msg))
-        print(len(msg))
         if msg == "LEAVE":
             sendMessage("END", users[user][2][1])
             return "add something here"
 
-        sendMessage(msg, users[user][2][1],encode=False)
+        sendMessage(msg, users[user][2][1], encode=False)
 
 
+# starts server and listens for connections
 def start():
     server.listen()
     print(f"[LISTENING] Server is listening on {SERVER}")
