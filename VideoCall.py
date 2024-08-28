@@ -1,4 +1,5 @@
 import imutils as imutils
+import numpy
 import pygame
 from pygame.locals import *
 import cv2
@@ -20,9 +21,14 @@ try:
         frame = np.array(frame)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame = np.rot90(frame)
+        print(frame.dtype)
+        frame = frame.tobytes()
 
-        print(len(frame))
-        print(len(frame[0]))
+        frame = np.frombuffer(frame, dtype=numpy.uint8).reshape(frame.shape)
+
+
+
+
         frame = pygame.surfarray.make_surface(frame)
         screen.blit(frame, (160, 0))
 

@@ -220,17 +220,38 @@ def playScreen():
 def videoCall():
     print("A")
     camera = cv2.VideoCapture(0)
+    fps_font = pygame.font.Font(None, 36)
+    frame_count = 0
+    start_time = time.time()
+    fps = 0
 
     while True:
         screen.fill((0, 0, 0))
         eventListener()
         ret, frame = camera.read()
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        output = conn.send(pickle.dumps(frame), encode=False)
+        frame = np.array(frame)
+        conn.send(frame.tobytes(), encode=False,receive=False)
+        output = conn.receive()
 
-        output = pickle.loads(output)
+        output = np.frombuffer(output, dtype=np.uint8).reshape(frame.shape)
         output = pygame.surfarray.make_surface(output)
         screen.blit(output, (0, 0))
+
+        # Calculate FPS
+        frame_count += 1
+        elapsed_time = time.time() - start_time
+        if elapsed_time > 1.0:
+            fps = frame_count / elapsed_time
+            start_time = time.time()
+            frame_count = 0
+
+
+        # Render FPS on screen
+
+        fps_text = fps_font.render(f"FPS: {fps:.2f}", True, (255, 255, 255))
+        screen.blit(fps_text, (10, 10))
+
         pygame.display.update()
 
 

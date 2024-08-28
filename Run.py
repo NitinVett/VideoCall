@@ -1,6 +1,6 @@
 import datetime
 import pygame
-import CardGameClient
+import VideoCallClient
 #
 #
 # currentScreen = 0
@@ -23,5 +23,5 @@ import CardGameClient
 #
 
 if __name__ == '__main__':
-    CardGameClient.menuScreen()
+    VideoCallClient.menuScreen()
 

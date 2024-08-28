@@ -30,7 +30,7 @@ class Connect:
                 buffer_size = total_length - len(data)
         return data
 
-    def send(self, msg, encode=True):
+    def send(self, msg, encode=True,receive = True):
         message = msg
 
         send_length = str(len(message))
@@ -43,7 +43,13 @@ class Connect:
         self.client.sendall(send_length)
 
         self.client.sendall(message)
+        if receive:
+            response = self.receive()
+            if encode:
+                response = response.decode(self.FORMAT)
+            return response
 
+    def receive(self):
         msg_length = self.client.recv(self.HEADER).decode(self.FORMAT)
 
         msg_length = int(msg_length)
@@ -52,6 +58,5 @@ class Connect:
             response = self.recvLargeMessage(msg_length)
         else:
             response = self.client.recv(msg_length)
-        if encode:
-            response = response.decode(self.FORMAT)
+
         return response
