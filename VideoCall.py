@@ -22,9 +22,8 @@ try:
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame = np.rot90(frame)
         print(frame.dtype)
-        frame = frame.tobytes()
 
-        frame = np.frombuffer(frame, dtype=numpy.uint8).reshape(frame.shape)
+        print(frame.shape)
 
 
 

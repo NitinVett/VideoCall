@@ -1,6 +1,7 @@
 import datetime
 import pickle
 import socket
+import threading
 import time
 import cv2
 import numpy as np
@@ -13,12 +14,10 @@ from Button import Button
 from Connect import Connect
 from TextBox import TextBox
 
-
 errormsgtimer = datetime.datetime.now() + datetime.timedelta(seconds=3)
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 800
 CHARLIMIT = 15
-
 
 SCALE = 1
 mixer.init()
@@ -138,7 +137,6 @@ def signup():
         screen.fill((0, 0, 0))
         eventListener()
 
-
         if back_button.draw(screen):
             removeAllTextBoxes()
             menuScreen()
@@ -170,7 +168,6 @@ def login():
     while True:
         screen.fill((0, 0, 0))
         eventListener()
-
 
         if back_button.draw(screen):
             removeAllTextBoxes()
@@ -217,24 +214,29 @@ def playScreen():
         pygame.display.flip()
 
 
-def videoCall():
-    print("A")
+def sendCamInput():
     camera = cv2.VideoCapture(0)
+    while True:
+        ret, frame = camera.read()
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = np.array(frame)
+        conn.send(frame.tobytes(), encode=False, receive=False)
+
+
+def videoCall():
     fps_font = pygame.font.Font(None, 36)
     frame_count = 0
     start_time = time.time()
     fps = 0
+    sendCam = threading.Thread(target=sendCamInput, daemon=True)
+    sendCam.start()
 
     while True:
         screen.fill((0, 0, 0))
         eventListener()
-        ret, frame = camera.read()
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame = np.array(frame)
-        conn.send(frame.tobytes(), encode=False,receive=False)
-        output = conn.receive()
 
-        output = np.frombuffer(output, dtype=np.uint8).reshape(frame.shape)
+        output = conn.receive()
+        output = np.frombuffer(output, dtype=np.uint8).reshape((480, 640, 3))
         output = pygame.surfarray.make_surface(output)
         screen.blit(output, (0, 0))
 
@@ -245,7 +247,6 @@ def videoCall():
             fps = frame_count / elapsed_time
             start_time = time.time()
             frame_count = 0
-
 
         # Render FPS on screen
 
