@@ -219,8 +219,8 @@ def sendCamInput():
     while True:
         ret, frame = camera.read()
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame = np.array(frame)
-        conn.send(frame.tobytes(), encode=False, receive=False)
+        frame = cv2.resize(frame, (320, 240))
+        conn.send(frame.tobytes(), encode=False)
 
 
 def videoCall():
@@ -236,8 +236,9 @@ def videoCall():
         eventListener()
 
         output = conn.receive()
-        output = np.frombuffer(output, dtype=np.uint8).reshape((480, 640, 3))
-        output = pygame.surfarray.make_surface(output)
+        output = np.frombuffer(output, dtype=np.uint8).reshape((320, 240, 3))
+        output = cv2.resize(output, (640, 480))
+        output = pygame.image.frombuffer(output.tobytes(), (640, 480), "RGB")
         screen.blit(output, (0, 0))
 
         # Calculate FPS

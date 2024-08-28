@@ -49,6 +49,7 @@ class Connect:
                 response = response.decode(self.FORMAT)
             return response
 
+
     def receive(self):
         msg_length = self.client.recv(self.HEADER).decode(self.FORMAT)
 

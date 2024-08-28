@@ -15,15 +15,13 @@ try:
     while True:
 
         ret, frame = camera.read()
-        frame = cv2.resize(frame, (960, 360))
+
         screen.fill([0, 0, 0])
 
         frame = np.array(frame)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame = np.rot90(frame)
-        print(frame.dtype)
-
-        print(frame.shape)
+        cv2.resize(frame,(320,240))
 
 
 
